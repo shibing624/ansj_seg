@@ -1,18 +1,5 @@
 package org.ansj.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.ansj.app.crf.Model;
 import org.ansj.app.crf.SplitWord;
 import org.ansj.dic.DicReader;
@@ -24,6 +11,14 @@ import org.nlpcn.commons.lang.util.StringUtil;
 import org.nlpcn.commons.lang.util.logging.Log;
 import org.nlpcn.commons.lang.util.logging.LogFactory;
 
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * 这个类储存一些公用变量.
  * 
@@ -34,8 +29,9 @@ public class MyStaticValue {
 
 	public static final Log LIBRARYLOG = LogFactory.getLog("DICLOG");
 
-	// 是否开启人名识别
+	// 是否开启人名识别；true：开启；false：关闭
 	public static boolean isNameRecognition = true;
+//	public static boolean isNameRecognition = false;
 
 	private static final Lock LOCK = new ReentrantLock();
 
