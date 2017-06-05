@@ -24,7 +24,9 @@ public class TermNature implements Serializable{
 	public static final TermNature USER_DEFINE = new TermNature("userDefine", 1);
 	public static final TermNature NR = new TermNature("nr", 1);
 	public static final TermNature NT = new TermNature("nt", 1);
+	public static final TermNature NS = new TermNature("ns", 1);
 	public static final TermNature NW = new TermNature("nw", 1);
+	public static final TermNature NRF = new TermNature("nrf", 1);
 	public static final TermNature NULL = new TermNature("null", 1);
 
 	public Nature nature;
@@ -37,7 +39,7 @@ public class TermNature implements Serializable{
 	}
 
 	public static TermNature[] setNatureStrToArray(String natureStr) {
-		// TODO Auto-generated method stub
+		
 		natureStr = natureStr.substring(1, natureStr.length() - 1);
 		String[] split = natureStr.split(",");
 		String[] strs = null;
@@ -53,6 +55,6 @@ public class TermNature implements Serializable{
 
 	@Override
 	public String toString() {
-		return this.nature.natureStr + "/" + frequency;
+		return nature.natureStr + "/" + frequency;
 	}
 }

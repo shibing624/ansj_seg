@@ -1,13 +1,13 @@
 package org.ansj.lucene3;
 
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.util.Set;
-
 import org.ansj.lucene.util.AnsjTokenizer;
 import org.ansj.splitWord.analysis.IndexAnalysis;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.util.Set;
 
 public class AnsjIndexAnalysis extends Analyzer {
 	public Set<String> filter;
@@ -36,7 +36,7 @@ public class AnsjIndexAnalysis extends Analyzer {
 
 	@Override
 	public TokenStream tokenStream(String fieldName, Reader reader) {
-		// TODO Auto-generated method stub
+		
 		return new AnsjTokenizer(new IndexAnalysis(new BufferedReader(reader)), reader, filter, pstemming);
 	}
 

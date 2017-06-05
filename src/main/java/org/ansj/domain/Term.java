@@ -34,6 +34,11 @@ public class Term implements Serializable{
 	private Term to;
 	// 本身这个term的词性.需要在词性识别之后才会有值,默认是空
 	private Nature nature = Nature.NULL;
+	//是否是一个新词
+	private boolean newWord ;
+	//同义词
+	private List<String> synonyms ;
+	
 
 	private List<Term> subTerm = null;
 
@@ -136,6 +141,19 @@ public class Term implements Serializable{
 		return this;
 	}
 
+	/**
+	 * 进行term合并,能合并空白字符
+	 * 
+	 * @param term
+	 * @param maxNature
+	 */
+	public Term merageWithBlank(Term to) {
+		this.name = this.name + to.getName();
+		this.realName = this.realName + to.getRealName();
+		this.setTo(to.to);
+		return this;
+	}
+	
 	/**
 	 * 更新偏移量
 	 * 
@@ -258,4 +276,25 @@ public class Term implements Serializable{
 		return this.item;
 	}
 
+	public boolean isNewWord() {
+		return newWord;
+	}
+
+	public void setNewWord(boolean newWord) {
+		this.newWord = newWord;
+	}
+
+	public void updateTermNaturesAndNature(TermNatures termNatures) {
+		this.termNatures = termNatures;
+		this.nature = termNatures.nature ;
+	}
+
+	public List<String> getSynonyms() {
+		return synonyms;
+	}
+
+	public void setSynonyms(List<String> synonyms) {
+		this.synonyms = synonyms;
+	}
+	
 }

@@ -4,13 +4,13 @@
 
 	<parent>
 		<groupId>org.ansj</groupId>
-		<artifactId>MavenAccount-aggregator</artifactId>
+		<artifactId>ansj_plugin</artifactId>
 		<version>0.0.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>ansj_lucene6_plug</artifactId>
-	<version>3.7.3</version>
+	<version>5.1.2.0</version>
 	<packaging>jar</packaging>
 	<name>ansj_lucene6_plug</name>
 	

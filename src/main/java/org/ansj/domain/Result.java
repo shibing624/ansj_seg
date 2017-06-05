@@ -53,7 +53,42 @@ public class Result implements Iterable<Term> {
 
 	@Override
 	public String toString() {
-		return StringUtil.joiner(this.terms, ",");
+		return toString(",");
+	}
+
+	
+	public String toString(String split) {
+		return StringUtil.joiner(this.terms, split);
+	}
+
+	/**
+	 * 返回没有词性的切分结果
+	 * @return
+	 */
+	public String toStringWithOutNature(){
+		return  toStringWithOutNature(",");
+	}
+	
+	/**
+	 * 返回没有词性的切分结果
+	 * @return
+	 */
+	public String toStringWithOutNature(String split) {
+		
+		if(terms==null || terms.size()==0){
+			return "" ;
+		}
+		
+		Iterator<Term> iterator = terms.iterator() ;
+		
+		StringBuilder sb = new StringBuilder(iterator.next().getRealName()) ;
+		
+		while(iterator.hasNext()){
+			sb.append(split);
+			sb.append(iterator.next().getRealName()) ;
+		}
+		
+		return sb.toString();
 	}
 
 }

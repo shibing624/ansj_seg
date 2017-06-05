@@ -23,12 +23,16 @@ public class TermNatures implements Serializable{
 	public static final TermNatures BEGIN = new TermNatures(TermNature.BEGIN, 50610, 0);
 
 	public static final TermNatures NT = new TermNatures(TermNature.NT);
+	
+	public static final TermNatures NS = new TermNatures(TermNature.NS);
+	
+	public static final TermNatures NRF = new TermNatures(TermNature.NRF);
 
 	public static final TermNatures NW = new TermNatures(TermNature.NW);
 
-	public static final TermNatures NULL = new TermNatures(TermNature.NULL);;
+	public static final TermNatures NULL = new TermNatures(TermNature.NULL);
 
-	/**
+    /**
 	 * 关于这个term的所有词性
 	 */
 	public TermNature[] termNatures = null;

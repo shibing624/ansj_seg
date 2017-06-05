@@ -35,6 +35,7 @@ public class AsianPersonRecognition implements TermArrRecognition{
 	// public int m = -1;//44 可拆分的姓名
 	// double[] factory = {"BC", "BCD", "BCDE"}
 
+	@Override
 	public void recognition(Term[] terms) {
 		this.terms = terms;
 		List<Term> termList = recogntion_();
@@ -90,7 +91,6 @@ public class AsianPersonRecognition implements TermArrRecognition{
 	 */
 
 	private Term nameFind(int offe, int beginFreq, int size) {
-		// TODO Auto-generated method stub
 		StringBuilder sb = new StringBuilder();
 		int undefinite = 0;
 		skip = false;

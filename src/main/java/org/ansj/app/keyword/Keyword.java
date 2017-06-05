@@ -8,7 +8,7 @@ public class Keyword implements Comparable<Keyword> {
 
 	public Keyword(String name, int docFreq, double weight) {
 		this.name = name;
-		this.idf = Math.log(10000 + 10000.0 / (docFreq + 1));
+		this.idf = Math.log(1 + 10000.0 / (docFreq + 1));
 		this.score = idf * weight;
 		freq++;
 	}
@@ -41,7 +41,7 @@ public class Keyword implements Comparable<Keyword> {
 
 	@Override
 	public boolean equals(Object obj) {
-		// TODO Auto-generated method stub
+		
 		if (obj instanceof Keyword) {
 			Keyword k = (Keyword) obj;
 			return k.name.equals(name);
@@ -52,7 +52,6 @@ public class Keyword implements Comparable<Keyword> {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return name + "/" + score;// "="+score+":"+freq+":"+idf;
 	}
 

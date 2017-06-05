@@ -8,17 +8,25 @@ import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
-import org.ansj.app.crf.Model;
 import org.ansj.app.crf.SplitWord;
 import org.ansj.dic.DicReader;
+import org.ansj.dic.impl.Jdbc2Stream;
 import org.ansj.domain.AnsjItem;
+import org.ansj.exception.LibraryException;
+import org.ansj.library.AmbiguityLibrary;
+import org.ansj.library.CrfLibrary;
 import org.ansj.library.DATDictionary;
-import org.ansj.library.UserDefineLibrary;
+import org.ansj.library.DicLibrary;
+import org.ansj.library.StopLibrary;
+import org.ansj.library.SynonymsLibrary;
+import org.ansj.recognition.impl.StopRecognition;
 import org.nlpcn.commons.lang.tire.domain.Forest;
+import org.nlpcn.commons.lang.tire.domain.SmartForest;
 import org.nlpcn.commons.lang.util.FileFinder;
 import org.nlpcn.commons.lang.util.IOUtil;
 import org.nlpcn.commons.lang.util.ObjConver;
@@ -34,17 +42,7 @@ import org.nlpcn.commons.lang.util.logging.LogFactory;
  */
 public class MyStaticValue {
 
-	public static void main(String[] args) {
-		System.out.println("ok");
-	}
-
-	public static final Forest EMPTY_FOREST = new Forest();
-
-	public static final Log LIBRARYLOG = LogFactory.getLog("DICLOG");
-
-	public static final String DIC_DEFAULT = "dic";
-
-	public static final String CRF_DEFAULT = "crf";
+	public static final Log LOG = LogFactory.getLog(MyStaticValue.class);
 
 	// 是否开启人名识别
 	public static Boolean isNameRecognition = true;
@@ -58,21 +56,12 @@ public class MyStaticValue {
 	// 是否显示真实词语
 	public static Boolean isRealName = false;
 
-	// 用户自定义词典
-	public static final Map<String, Object> DIC = new HashMap<String, Object>();
-
-	// CRF模型
-	public static final Map<String, Object> CRF = new HashMap<String, Object>();
-
-	/**
-	 * 用户自定义词典的加载,如果是路径就扫描路径下的dic文件
-	 */
-	public static String ambiguityLibrary = "library/ambiguity.dic";
-
 	/**
 	 * 是否用户辞典不加载相同的词
 	 */
 	public static boolean isSkipUserDefine = false;
+
+	public static final Map<String, String> ENV = new HashMap<>();
 
 	static {
 		/**
@@ -80,57 +69,51 @@ public class MyStaticValue {
 		 */
 		ResourceBundle rb = null;
 		try {
-			rb = ResourceBundle.getBundle("library");
+			rb = ResourceBundle.getBundle("ansj_library");
 		} catch (Exception e) {
 			try {
-				File find = FileFinder.find("library.properties", 2);
+				File find = FileFinder.find("ansj_library.properties", 1);
 				if (find != null && find.isFile()) {
 					rb = new PropertyResourceBundle(IOUtil.getReader(find.getAbsolutePath(), System.getProperty("file.encoding")));
-					LIBRARYLOG.info("load library not find in classPath ! i find it in " + find.getAbsolutePath() + " make sure it is your config!");
+					LOG.info("load ansj_library not find in classPath ! i find it in " + find.getAbsolutePath() + " make sure it is your config!");
 				}
 			} catch (Exception e1) {
-				LIBRARYLOG.warn("not find library.properties. and err " + e.getMessage() + " i think it is a bug!");
+				LOG.warn("not find ansj_library.properties. reason: " + e1.getMessage());
 			}
 		}
 
-		CRF.put(CRF_DEFAULT, "library/crf.model");
-		DIC.put(DIC_DEFAULT, "library/default.dic");
+		if (rb == null) {
+			try {
+				rb = ResourceBundle.getBundle("library");
+			} catch (Exception e) {
+				try {
+					File find = FileFinder.find("library.properties", 2);
+					if (find != null && find.isFile()) {
+						rb = new PropertyResourceBundle(IOUtil.getReader(find.getAbsolutePath(), System.getProperty("file.encoding")));
+						LOG.info("load library not find in classPath ! i find it in " + find.getAbsolutePath() + " make sure it is your config!");
+					}
+				} catch (Exception e1) {
+					LOG.warn("not find library.properties. reason: " + e1.getMessage());
+				}
+			}
+		}
 
 		if (rb == null) {
-			LIBRARYLOG.warn("not find library.properties in classpath use it by default !");
+			LOG.warn("not find library.properties in classpath use it by default !");
 		} else {
 
 			for (String key : rb.keySet()) {
-
-				if (key.equals("dic")) {
-					DIC.put(key, rb.getString(key));
-				} else if (key.equals("crf")) {
-					CRF.put(key, rb.getString(key));
-				} else if (key.startsWith("dic_")) {
-					if (DIC.containsKey(key)) {
-						LIBRARYLOG.warn(key + " dic config repeat definition now overwrite it !");
+				ENV.put(key, rb.getString(key));
+				try {
+					String value = rb.getString(key);
+					if (value.startsWith("jdbc:")) { //给jdbc窜中密码做一个加密,不让密码明文在日志中
+						value = Jdbc2Stream.encryption(value);
 					}
-					DIC.put(key, rb.getString(key));
-				} else if (key.startsWith("crf_")) {
-					if (CRF.containsKey(key)) {
-						LIBRARYLOG.warn(key + " crf config repeat definition now overwrite it !");
-					}
-					CRF.put(key, rb.getString(key));
-				} else {
-					try {
-						Field field = MyStaticValue.class.getField(key);
-						field.set(null, ObjConver.conversion(rb.getString(key), field.getType()));
-					} catch (NoSuchFieldException e) {
-						e.printStackTrace();
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
+					LOG.info("init " + key + " to env value is : " + value);
+					Field field = MyStaticValue.class.getField(key);
+					field.set(null, ObjConver.conversion(rb.getString(key), field.getType()));
+				} catch (Exception e) {
 				}
-
 			}
 
 		}
@@ -213,6 +196,15 @@ public class MyStaticValue {
 	 * 
 	 * @return
 	 */
+	public static BufferedReader getNatureClassSuffix() {
+		return DicReader.getReader("nature_class_suffix.txt");
+	}
+
+	/**
+	 * 根据词语后缀判断词性
+	 * 
+	 * @return
+	 */
 	public static BufferedReader getPersonFreqReader() {
 		return DicReader.getReader("person/name_freq.dic");
 	}
@@ -224,27 +216,14 @@ public class MyStaticValue {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Map<String, int[][]> getPersonFreqMap() {
-		InputStream inputStream = null;
-		ObjectInputStream objectInputStream = null;
 		Map<String, int[][]> map = new HashMap<String, int[][]>(0);
-		try {
-			inputStream = DicReader.getInputStream("person/asian_name_freq.data");
-			objectInputStream = new ObjectInputStream(inputStream);
+		try (InputStream inputStream = DicReader.getInputStream("person/asian_name_freq.data")) {
+			ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 			map = (Map<String, int[][]>) objectInputStream.readObject();
-
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.warn("IO异常", e);
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (objectInputStream != null)
-					objectInputStream.close();
-				if (inputStream != null)
-					inputStream.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			LOG.warn("找不到类", e);
 		}
 		return map;
 	}
@@ -255,9 +234,7 @@ public class MyStaticValue {
 	 * @return
 	 */
 	public static void initBigramTables() {
-		BufferedReader reader = null;
-		try {
-			reader = IOUtil.getReader(DicReader.getInputStream("bigramdict.dic"), "UTF-8");
+		try (BufferedReader reader = IOUtil.getReader(DicReader.getInputStream("bigramdict.dic"), "UTF-8")) {
 			String temp = null;
 			String[] strs = null;
 			int freq = 0;
@@ -292,107 +269,108 @@ public class MyStaticValue {
 
 			}
 		} catch (NumberFormatException e) {
-			e.printStackTrace();
+			LOG.warn("数字格式异常", e);
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			LOG.warn("不支持的编码", e);
 		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			IOUtil.close(reader);
+			LOG.warn("IO异常", e);
 		}
-
 	}
 
-	/**
-	 * 得到默认的模型
-	 *
-	 * @return
+	/*
+	 * 外部引用为了实例化加载变量
 	 */
-	public static SplitWord getCRFSplitWord() {
-		return getCRFSplitWord(CRF_DEFAULT);
+	public static Log getLog(Class<?> clazz) {
+		return LogFactory.getLog(clazz);
 	}
 
 	/**
-	 * 根据模型名称获取crf模型
+	 * 增加一个词典
 	 * 
 	 * @param key
-	 * @return
+	 * @param path
+	 * @param value
 	 */
-	public static SplitWord getCRFSplitWord(String key) {
-		Object temp = CRF.get(key);
-
-		if (temp == null) {
-			LIBRARYLOG.warn("crf " + key + " not found in config ");
-			return null;
-		} else if (temp instanceof String) {
-			return initCRFModel(key, (String) temp);
+	public static void putLibrary(String key, String path, Object value) {
+		if (key.startsWith(DicLibrary.DEFAULT)) {
+			DicLibrary.put(key, path, (Forest) value);
+		} else if (key.startsWith(StopLibrary.DEFAULT)) {
+			StopLibrary.put(key, path, (StopRecognition) value);
+		} else if (key.startsWith(SynonymsLibrary.DEFAULT)) {
+			SynonymsLibrary.put(key, path, (SmartForest) value);
+		} else if (key.startsWith(AmbiguityLibrary.DEFAULT)) {
+			AmbiguityLibrary.put(key, path, (Forest) value);
+		} else if (key.startsWith(CrfLibrary.DEFAULT)) {
+			CrfLibrary.put(key, path, (SplitWord) value);
 		} else {
-			return (SplitWord) temp;
+			throw new LibraryException(key + " type err must start with dic,stop,ambiguity,synonyms");
 		}
+		ENV.put(key, path);
 	}
 
 	/**
-	 * 加载CRF模型
+	 * 懒加载一个词典
 	 * 
-	 * @param modelPath
-	 * @return
+	 * @param key
+	 * @param path
 	 */
-	private static synchronized SplitWord initCRFModel(String key, String modelPath) {
-		try {
-			Object obj = CRF.get(key);
-			if (obj != null && obj instanceof SplitWord) {
-				return (SplitWord) obj;
-			}
-			long start = System.currentTimeMillis();
-			LIBRARYLOG.info("begin init crf model!");
-			SplitWord crfSplitWord = new SplitWord(Model.load(modelPath));
-			CRF.put(key, crfSplitWord);
-			LIBRARYLOG.info("load crf crf use time:" + (System.currentTimeMillis() - start));
-			return crfSplitWord;
-		} catch (Exception e) {
-			LIBRARYLOG.warn("!!!!!!!!!! not find crf model you can run DownLibrary.main(null) to down !\n or you can visit http://maven.nlpcn.org/down/ to down it ! ");
-		}
-		return null;
-	}
-
-	/**
-	 * 得到默认的模型
-	 *
-	 * @return
-	 */
-	public static Forest getDicForest() {
-		return getDicForest(DIC_DEFAULT);
-	}
-
-	/**
-	 * 根据模型名称获取crf模型
-	 * 
-	 * @param modelName
-	 * @return
-	 */
-	public static Forest getDicForest(String key) {
-		Object temp = DIC.get(key);
-
-		if (temp == null) {
-			LIBRARYLOG.warn("dic " + key + " not found in config ");
-			return null;
-		} else if (temp instanceof String) {
-			return initForest(key, (String) temp);
+	public static void putLibrary(String key, String path) {
+		if (key.startsWith(DicLibrary.DEFAULT)) {
+			DicLibrary.put(key, path);
+		} else if (key.startsWith(StopLibrary.DEFAULT)) {
+			StopLibrary.put(key, path);
+		} else if (key.startsWith(SynonymsLibrary.DEFAULT)) {
+			SynonymsLibrary.put(key, path);
+		} else if (key.startsWith(AmbiguityLibrary.DEFAULT)) {
+			AmbiguityLibrary.put(key, path);
+		} else if (key.startsWith(CrfLibrary.DEFAULT)) {
+			CrfLibrary.put(key, path);
 		} else {
-			return (Forest) temp;
+			throw new LibraryException(key + " type err must start with dic,stop,ambiguity,synonyms");
 		}
+		ENV.put(key, path);
 	}
 
-	private synchronized static Forest initForest(String key, String dicPath) {
-		Object obj = CRF.get(key);
-
-		if (obj != null && obj instanceof Forest) {
-			return (Forest) obj;
+	/**
+	 * 删除一个词典
+	 * 
+	 * @param key
+	 */
+	public static void removeLibrary(String key) {
+		if (key.startsWith(DicLibrary.DEFAULT)) {
+			DicLibrary.remove(key);
+		} else if (key.startsWith(StopLibrary.DEFAULT)) {
+			StopLibrary.remove(key);
+		} else if (key.startsWith(SynonymsLibrary.DEFAULT)) {
+			SynonymsLibrary.remove(key);
+		} else if (key.startsWith(AmbiguityLibrary.DEFAULT)) {
+			AmbiguityLibrary.remove(key);
+		} else if (key.startsWith(CrfLibrary.DEFAULT)) {
+			CrfLibrary.remove(key);
+		} else {
+			throw new LibraryException(key + " type err must start with dic,stop,ambiguity,synonyms");
 		}
-		Forest forest = new Forest();
-		UserDefineLibrary.loadLibrary(forest, dicPath);
-		DIC.put(key, forest);
-		return forest;
+		ENV.remove(key);
 	}
 
+	/**
+	 * 重置一个词典
+	 * 
+	 * @param key
+	 */
+	public static void reloadLibrary(String key) {
+		if (key.startsWith(DicLibrary.DEFAULT)) {
+			DicLibrary.reload(key);
+		} else if (key.startsWith(StopLibrary.DEFAULT)) {
+			StopLibrary.reload(key);
+		} else if (key.startsWith(SynonymsLibrary.DEFAULT)) {
+			SynonymsLibrary.reload(key);
+		} else if (key.startsWith(AmbiguityLibrary.DEFAULT)) {
+			AmbiguityLibrary.reload(key);
+		} else if (key.startsWith(CrfLibrary.DEFAULT)) {
+			CrfLibrary.reload(key);
+		} else {
+			throw new LibraryException(key + " type err must start with dic,stop,ambiguity,synonyms");
+		}
+	}
 }

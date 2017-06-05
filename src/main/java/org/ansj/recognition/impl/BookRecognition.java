@@ -18,6 +18,11 @@ import org.ansj.recognition.Recognition;
  */
 public class BookRecognition implements Recognition {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static final Nature nature = new Nature("book");
 
 	private static Map<String, String> ruleMap = new HashMap<String, String>();
@@ -26,6 +31,7 @@ public class BookRecognition implements Recognition {
 		ruleMap.put("《", "》");
 	}
 
+	@Override
 	public void recognition(Result result) {
 		List<Term> terms = result.getTerms() ;
 		String end = null;

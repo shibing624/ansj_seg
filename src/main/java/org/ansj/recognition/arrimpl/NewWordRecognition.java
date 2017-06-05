@@ -15,7 +15,7 @@ import org.nlpcn.commons.lang.tire.domain.SmartForest;
  * 
  */
 public class NewWordRecognition {
-
+	
 	private Term[] terms = null;
 
 	private double score;

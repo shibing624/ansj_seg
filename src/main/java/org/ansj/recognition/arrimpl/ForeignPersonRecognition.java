@@ -52,6 +52,7 @@ public class ForeignPersonRecognition implements TermArrRecognition {
 	private LinkedList<NameChar> prList = null;
 	private Term[] terms = null;
 
+	@Override
 	public void recognition(Term[] terms) {
 		this.terms = terms;
 		String name = null;
@@ -108,7 +109,7 @@ public class ForeignPersonRecognition implements TermArrRecognition {
 
 	@SuppressWarnings("unchecked")
 	private void reset() {
-		// TODO Auto-generated method stub
+		
 		tempList.clear();
 		prList = (LinkedList<NameChar>) PRLIST.clone();
 	}

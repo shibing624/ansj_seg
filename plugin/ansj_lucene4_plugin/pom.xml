@@ -4,44 +4,34 @@
 
 	<parent>
 		<groupId>org.ansj</groupId>
-		<artifactId>MavenAccount-aggregator</artifactId>
+		<artifactId>ansj_plugin</artifactId>
 		<version>0.0.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>ansj_lucene4_plug</artifactId>
-	<version>3.0</version>
+	<version>5.0.2</version>
 	<packaging>jar</packaging>
 	<name>ansj_lucene4_plug</name>
 
 	<dependencies>
-		
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
-			<version>4.10.4</version>
+			<version>4.10.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-highlighter</artifactId>
-			<version>4.10.4</version>
+			<version>4.10.2</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queries</artifactId>
-			<version>4.10.4</version>
-			<scope>provided</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-queryparser</artifactId>
-			<version>4.10.4</version>
+			<version>4.10.2</version>
 			<scope>provided</scope>
 		</dependency>
-		
 	</dependencies>
 </project>

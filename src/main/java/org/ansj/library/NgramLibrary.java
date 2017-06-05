@@ -2,6 +2,7 @@ package org.ansj.library;
 
 import org.ansj.domain.Term;
 import org.ansj.util.MyStaticValue;
+import org.nlpcn.commons.lang.util.logging.LogFactory;
 
 /**
  * 两个词之间的关联
@@ -11,14 +12,9 @@ import org.ansj.util.MyStaticValue;
  */
 public class NgramLibrary {
 	static {
-		try {
-			long start = System.currentTimeMillis();
-			MyStaticValue.initBigramTables();
-			MyStaticValue.LIBRARYLOG.info("init ngram ok use time :" + (System.currentTimeMillis() - start));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		long start = System.currentTimeMillis();
+		MyStaticValue.initBigramTables();
+		LogFactory.getLog(NgramLibrary.class).info("init ngram ok use time :" + (System.currentTimeMillis() - start));
 	}
 
 	/**
@@ -33,7 +29,6 @@ public class NgramLibrary {
 			return 0;
 		}
 		Integer freq = from.item().bigramEntryMap.get(to.item().getIndex());
-
 		if (freq == null) {
 			return 0;
 		} else {

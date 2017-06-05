@@ -1,5 +1,7 @@
 package org.ansj.recognition;
 
+import java.io.Serializable;
+
 import org.ansj.domain.Result;
 
 /**
@@ -8,6 +10,6 @@ import org.ansj.domain.Result;
  * @author Ansj
  *
  */
-public interface Recognition {
-	public void recognition(Result result) ;
+public interface Recognition extends Serializable{
+	void recognition(Result result) ;
 }
