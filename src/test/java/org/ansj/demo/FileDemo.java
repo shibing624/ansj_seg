@@ -1,13 +1,13 @@
 package org.ansj.demo;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-
 import org.ansj.domain.Term;
 import org.ansj.splitWord.Analysis;
 import org.ansj.splitWord.analysis.BaseAnalysis;
 import org.ansj.splitWord.analysis.ToAnalysis;
 import org.nlpcn.commons.lang.util.IOUtil;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 
 /**
  * 对文件进行分词的例子
@@ -18,7 +18,6 @@ import org.nlpcn.commons.lang.util.IOUtil;
 
 public class FileDemo {
 	public static void main(String[] args) throws IOException {
-		//
 		// MyStaticValue.isRealName = true;
 		BufferedReader reader = IOUtil.getReader("/home/ansj/temp/360baikeData/360tag_all.txt", "utf-8");
 		
